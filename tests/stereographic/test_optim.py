@@ -3,8 +3,8 @@ import geoopt
 import torch
 import numpy as np
 import pytest
-from geoopt.manifolds import Stereographic
-from geoopt.manifolds import StereographicExact
+from geoopt.manifolds.stereographic import Stereographic
+from geoopt.manifolds.stereographic import StereographicExact
 from geoopt.manifolds import PoincareBall
 from geoopt.manifolds import PoincareBallExact
 

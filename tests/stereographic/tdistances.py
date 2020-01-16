@@ -1,5 +1,5 @@
 import torch
-from geoopt.manifolds import StereographicExact
+from geoopt.manifolds.stereographic import StereographicExact
 
 dtype = torch.float64
 
