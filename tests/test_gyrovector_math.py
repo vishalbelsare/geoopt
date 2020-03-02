@@ -385,7 +385,7 @@ def test_geodesic_segement_unit_property(a, b, c, manifold):
 def test_expmap_logmap(a, b, c, manifold):
     # this test appears to be numerical unstable once a and b may appear on the opposite sides
     bh = manifold.expmap(x=a, u=manifold.logmap(a, b))
-    tolerance = {torch.float32: dict(rtol=1e-5, atol=1e-5), torch.float64: dict()}
+    tolerance = {torch.float32: dict(rtol=1e-5, atol=5e-5), torch.float64: dict()}
     np.testing.assert_allclose(bh.detach(), b.detach(), **tolerance[c.dtype])
     bh.sum().backward()
     assert torch.isfinite(a.grad).all()
@@ -534,12 +534,18 @@ def test_add_infinity_and_beyond(a, b, c, negative, manifold):
         pytest.skip("zero not checked")
     infty = b * 10000000
     for i in range(100):
-        z = manifold.expmap(a, infty)
+        z = manifold.expmap(a, infty, project=False)
         z = manifold.projx(z)
-        z = manifold.mobius_scalar_mul(torch.tensor(1000.0, dtype=z.dtype), z)
+        assert not torch.isnan(z).any(), ("Found nans", i, z)
+        assert torch.isfinite(z).all(), ("Found Infs", i, z)
+        z = manifold.mobius_scalar_mul(
+            torch.tensor(1000.0, dtype=z.dtype), z, project=False
+        )
         z = manifold.projx(z)
+        assert not torch.isnan(z).any(), ("Found nans", i, z)
+        assert torch.isfinite(z).all(), ("Found Infs", i, z)
+
         infty = manifold.transp(a, z, infty)
-        assert torch.isfinite(z).all(), (i, z)
         assert torch.isfinite(infty).all(), (i, infty)
         a = z
     z = manifold.expmap(a, -infty)
@@ -559,10 +565,10 @@ def test_mobius_coadd(a, b, c, negative, manifold):
     # (a \boxplus_c b) \ominus_c b = a
     ah = manifold.mobius_sub(manifold.mobius_coadd(a, b), b)
     if negative:
-        np.testing.assert_allclose(ah.detach(), a.detach(), atol=1e-5)
+        np.testing.assert_allclose(ah.detach(), a.detach(), atol=5e-5)
     else:
         try:
-            np.testing.assert_allclose(ah.detach(), a.detach(), atol=1e-5)
+            np.testing.assert_allclose(ah.detach(), a.detach(), atol=5e-5)
         except AssertionError as e:
             assert not torch.isnan(ah).any(), "Found nans"
             warnings.warn("Unstable numerics: " + " | ".join(str(e).splitlines()[3:6]))

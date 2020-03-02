@@ -202,10 +202,10 @@ def tan_k(x: torch.Tensor, k: torch.Tensor):
     if torch.all(k_sign.lt(0)):
         return k_sqrt.reciprocal() * tanh(scaled_x)
     elif torch.all(k_sign.gt(0)):
-        return k_sqrt.reciprocal() * scaled_x.tan()
+        return k_sqrt.reciprocal() * scaled_x.clamp_max(1e38).tan()
     else:
         tan_k_nonzero = (
-            torch.where(k_sign.gt(0), scaled_x.tan(), tanh(scaled_x))
+            torch.where(k_sign.gt(0), scaled_x.clamp_max(1e38).tan(), tanh(scaled_x))
             * k_sqrt.reciprocal()
         )
         return torch.where(k_zero, tan_k_zero_taylor(x, k, order=1), tan_k_nonzero)
@@ -312,14 +312,14 @@ def project(x: torch.Tensor, *, k: torch.Tensor, dim=-1, eps=-1):
 
 @torch.jit.script
 def _project(x, k, dim: int = -1, eps: float = -1.0):
-    norm = x.norm(dim=dim, keepdim=True, p=2).clamp_min(1e-5)
     if eps < 0:
         if x.dtype == torch.float32:
             eps = 4e-3
         else:
             eps = 1e-5
     maxnorm = (1 - eps) / (sabs(k) ** 0.5)
-    maxnorm = torch.where(k.lt(0), maxnorm, k.new_full((), 1e16))
+    maxnorm = torch.where(k.lt(0), maxnorm, k.new_full((), 1e15))
+    norm = x.norm(dim=dim, keepdim=True, p=2).clamp_min(1e-15)
     cond = norm > maxnorm
     projected = x / norm * maxnorm
     return torch.where(cond, projected, x)
@@ -1974,7 +1974,7 @@ def _weighted_midpoint(
             for d in reducedim:
                 alpha *= xs.size(d)
         else:
-            weights = weights.expand_as(gamma)
+            weights, _ = torch.broadcast_tensors(weights, gamma)
             alpha = weights.sum(reducedim, keepdim=True)
         a_mean = _mobius_scalar_mul(alpha, a_mean, k=k, dim=dim)
     if not keepdim:
