@@ -1969,10 +1969,10 @@ def _weighted_midpoint(
     if torch.any(k.gt(0)):
         # check antipode
         b_mean = _antipode(a_mean, k, dim=dim)
-        a_dist = _dist(a_mean, xs, k=k, keepdim=True, dim=dim).sum(
+        a_dist = _dist(a_mean, xs * weights.sign(), k=k, keepdim=True, dim=dim).sum(
             reducedim, keepdim=True
         )
-        b_dist = _dist(b_mean, xs, k=k, keepdim=True, dim=dim).sum(
+        b_dist = _dist(b_mean, xs * weights.sign(), k=k, keepdim=True, dim=dim).sum(
             reducedim, keepdim=True
         )
         better = k.gt(0) & (b_dist < a_dist)
