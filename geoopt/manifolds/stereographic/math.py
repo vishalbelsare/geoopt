@@ -1878,6 +1878,7 @@ def weighted_midpoint(
     dim: int = -1,
     keepdim: bool = False,
     lincomb: bool = False,
+    posweight: bool = False
 ):
     r"""
     Compute weighted Möbius gyromidpoint.
@@ -1925,6 +1926,10 @@ def weighted_midpoint(
         retain the last dim? (default: false)
     lincomb : bool
         linear combination implementation
+    posweight : bool
+        make all weights positive. Negative weight will weight antipode of entry with positive weight instead.
+        This will give experimentally better numerics and nice interpolation
+        properties for linear combination and averaging
 
     Returns
     -------
@@ -1939,6 +1944,7 @@ def weighted_midpoint(
         dim=dim,
         keepdim=keepdim,
         lincomb=lincomb,
+        posweight=posweight
     )
 
 
@@ -1951,6 +1957,7 @@ def _weighted_midpoint(
     dim: int = -1,
     keepdim: bool = False,
     lincomb: bool = False,
+    posweight: bool = False
 ):
     if reducedim is None:
         reducedim = list_range(xs.dim())
@@ -1960,7 +1967,10 @@ def _weighted_midpoint(
         weights = torch.tensor(1.0, dtype=xs.dtype, device=xs.device)
     else:
         weights = weights.unsqueeze(dim)
-    denominator = ((gamma - 1) * weights.abs()).sum(reducedim, keepdim=True)
+    if posweight and weights.lt(0).any():
+        xs = torch.where(weights.lt(0), _antipode(xs, k=k, dim=dim), xs)
+        weights = weights.abs()
+    denominator = ((gamma - 1) * weights).sum(reducedim, keepdim=True)
     nominator = (gamma * weights * xs).sum(reducedim, keepdim=True)
     two_mean = nominator / clamp_abs(denominator)
     a_mean = _mobius_scalar_mul(
@@ -1969,10 +1979,10 @@ def _weighted_midpoint(
     if torch.any(k.gt(0)):
         # check antipode
         b_mean = _antipode(a_mean, k, dim=dim)
-        a_dist = _dist(a_mean, xs * weights.sign(), k=k, keepdim=True, dim=dim).sum(
+        a_dist = _dist(a_mean, xs, k=k, keepdim=True, dim=dim).sum(
             reducedim, keepdim=True
         )
-        b_dist = _dist(b_mean, xs * weights.sign(), k=k, keepdim=True, dim=dim).sum(
+        b_dist = _dist(b_mean, xs, k=k, keepdim=True, dim=dim).sum(
             reducedim, keepdim=True
         )
         better = k.gt(0) & (b_dist < a_dist)
@@ -1984,7 +1994,7 @@ def _weighted_midpoint(
                 alpha *= xs.size(d)
         else:
             weights, _ = torch.broadcast_tensors(weights, gamma)
-            alpha = weights.abs().sum(reducedim, keepdim=True)
+            alpha = weights.sum(reducedim, keepdim=True)
         a_mean = _mobius_scalar_mul(alpha, a_mean, k=k, dim=dim)
     if not keepdim:
         a_mean = drop_dims(a_mean, reducedim)
