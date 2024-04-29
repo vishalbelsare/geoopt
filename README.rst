@@ -10,7 +10,7 @@ Methods”`_ ICLR2019 and more.
 
 Installation
 ------------
-Make sure you have pytorch>=1.9.0 installed
+Make sure you have pytorch>=2.0.1 installed
 
 There are two ways to install geoopt:
 
@@ -21,7 +21,7 @@ There are two ways to install geoopt:
     pip install git+https://github.com/geoopt/geoopt.git
 
 
-2. pypi (this might be significantly behind master branch)
+2. pypi (this might be significantly behind master branch but kept as fresh as possible)
 
 .. code-block:: bash
 
@@ -33,9 +33,7 @@ Now, pypi is behind master as we actively develop and implement new features.
 
 PyTorch Support
 ~~~~~~~~~~~~~~~
-Geoopt officially supports **2 latest stable versions** (1.9.0 so far) of pytorch upstream or the latest major release.
-We also test (TODO: there were complications with github workflows, need help) against the nightly build, but do not be 100% sure about compatibility.
-As for older pytorch versions, you may use it on your own risk (do not forget to run tests).
+Geoopt officially supports **2 latest stable versions** of pytorch upstream or the latest major release.
 
 What is done so far
 -------------------
@@ -46,34 +44,34 @@ change in future releases.
 Tensors
 ~~~~~~~
 
--  ``geoopt.ManifoldTensor`` – just as torch.Tensor with additional
+-  ``geoopt.ManifoldTensor`` - just as torch.Tensor with additional
    ``manifold`` keyword argument.
--  ``geoopt.ManifoldParameter`` – same as above, recognized in
+-  ``geoopt.ManifoldParameter`` - same as above, recognized in
    ``torch.nn.Module.parameters`` as correctly subclassed.
 
 All above containers have special methods to work with them as with
 points on a certain manifold
 
--  ``.proj_()`` – inplace projection on the manifold.
--  ``.proju(u)`` – project vector ``u`` on the tangent space. You need
+-  ``.proj_()`` - inplace projection on the manifold.
+-  ``.proju(u)`` - project vector ``u`` on the tangent space. You need
    to project all vectors for all methods below.
--  ``.egrad2rgrad(u)`` – project gradient ``u`` on Riemannian manifold
--  ``.inner(u, v=None)`` – inner product at this point for two
+-  ``.egrad2rgrad(u)`` - project gradient ``u`` on Riemannian manifold
+-  ``.inner(u, v=None)`` - inner product at this point for two
    **tangent** vectors at this point. The passed vectors are not
    projected, they are assumed to be already projected.
--  ``.retr(u)`` – retraction map following vector ``u``
--  ``.expmap(u)`` – exponential map following vector ``u`` (if expmap is not available in closed form, best approximation is used)
--  ``.transp(v, u)`` – transport vector ``v``  with direction ``u``
--  ``.retr_transp(v, u)`` – transport ``self``, vector ``v``
+-  ``.retr(u)`` - retraction map following vector ``u``
+-  ``.expmap(u)`` - exponential map following vector ``u`` (if expmap is not available in closed form, best approximation is used)
+-  ``.transp(v, u)`` - transport vector ``v``  with direction ``u``
+-  ``.retr_transp(v, u)`` - transport ``self``, vector ``v``
    (and possibly more vectors) with direction ``u``
    (returns are plain tensors)
 
 Manifolds
 ~~~~~~~~~
 
--  ``geoopt.Euclidean`` – unconstrained manifold in ``R`` with
+-  ``geoopt.Euclidean`` - unconstrained manifold in ``R`` with
    Euclidean metric
--  ``geoopt.Stiefel`` – Stiefel manifold on matrices
+-  ``geoopt.Stiefel`` - Stiefel manifold on matrices
    ``A in R^{n x p} : A^t A=I``, ``n >= p``
 -  ``geoopt.Sphere`` - Sphere manifold ``||x||=1``
 -  ``geoopt.BirkhoffPolytope`` - manifold of Doubly Stochastic matrices
@@ -93,19 +91,23 @@ tangent vectors to be used in general purpose. See more in `documentation`_.
 Optimizers
 ~~~~~~~~~~
 
--  ``geoopt.optim.RiemannianSGD`` – a subclass of ``torch.optim.SGD``
+-  ``geoopt.optim.RiemannianSGD`` - a subclass of ``torch.optim.SGD``
    with the same API
--  ``geoopt.optim.RiemannianAdam`` – a subclass of ``torch.optim.Adam``
+-  ``geoopt.optim.RiemannianAdam`` - a subclass of ``torch.optim.Adam``
 
 Samplers
 ~~~~~~~~
 
--  ``geoopt.samplers.RSGLD`` – Riemannian Stochastic Gradient Langevin
+-  ``geoopt.samplers.RSGLD`` - Riemannian Stochastic Gradient Langevin
    Dynamics
--  ``geoopt.samplers.RHMC`` – Riemannian Hamiltonian Monte-Carlo
--  ``geoopt.samplers.SGRHMC`` – Stochastic Gradient Riemannian
+-  ``geoopt.samplers.RHMC`` - Riemannian Hamiltonian Monte-Carlo
+-  ``geoopt.samplers.SGRHMC`` - Stochastic Gradient Riemannian
    Hamiltonian Monte-Carlo
 
+
+Layers
+~~~~~~
+Experimental ``geoopt.layers`` module allows to embed geoopt into deep learning
 
 Citing Geoopt
 ~~~~~~~~~~~~~
@@ -122,6 +124,10 @@ If you find this project useful in your research, please kindly add this bibtex 
         primaryClass={cs.CG}
     }
 
+Donations
+~~~~~~~~~
+ETH: 0x008319973D4017414FdF5B3beF1369bA78275C6A
+   
 
 .. _“Riemannian Adaptive Optimization Methods”: https://openreview.net/forum?id=r1eiqi09K7
 .. _documentation: https://geoopt.readthedocs.io/en/latest/manifolds.html
@@ -140,3 +146,5 @@ If you find this project useful in your research, please kindly add this bibtex 
    :target: https://github.com/ambv/black
 .. |Gitter| image:: https://badges.gitter.im/geoopt/community.png
    :target: https://gitter.im/geoopt/community
+   
+   

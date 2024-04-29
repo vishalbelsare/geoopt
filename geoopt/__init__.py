@@ -23,6 +23,7 @@ from .manifolds import (
     SphereProjection,
     SphereProjectionExact,
     ProductManifold,
+    StereographicProductManifold,
     Scaled,
     Lorentz,
     BirkhoffPolytope,
@@ -31,4 +32,4 @@ from .manifolds import (
     BoundedDomain,
 )
 
-__version__ = "0.4.0"
+__version__ = "0.5.1"

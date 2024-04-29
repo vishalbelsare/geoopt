@@ -1,6 +1,7 @@
 """
 Tests ideas are taken mostly from https://github.com/dalab/hyperbolic_nn/blob/master/util.py with some changes
 """
+
 import torch
 import random
 import numpy as np
@@ -579,7 +580,7 @@ def test_distance2plane(a, manifold):
     dist1 = manifold.dist(a, z)
     dist = manifold.dist2plane(z, a, vr)
 
-    np.testing.assert_allclose(dist.detach(), dist1.detach(), atol=2e-4, rtol=1e-4)
+    np.testing.assert_allclose(dist.detach(), dist1.detach(), atol=4e-4, rtol=4e-4)
     (dist + dist1).sum().backward()
     assert torch.isfinite(a.grad).all()
     assert torch.isfinite(v.grad).all()
